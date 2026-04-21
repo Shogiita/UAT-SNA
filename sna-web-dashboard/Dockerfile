@@ -1,40 +1,34 @@
-steps:
-  # Langkah 1: Build Docker Image untuk Frontend
-  - name: "gcr.io/cloud-builders/docker"
-    id: "Build-Frontend-Image"
-    dir: "sna-web-dashboard"  # <--- TAMBAHKAN BARIS INI
-    args:
-      - "build"
-      - "-t"
-      - "gcr.io/$PROJECT_ID/sna-web-dashboard:$SHORT_SHA"
-      - "."
+# STAGE 1: Build tahap kompilasi React/Vite
+FROM node:20-alpine AS builder
 
-  # Langkah 2: Push Docker Image ke Google Container Registry (GCR)
-  - name: "gcr.io/cloud-builders/docker"
-    id: "Push-Frontend-Image"
-    dir: "sna-web-dashboard"  # <--- TAMBAHKAN BARIS INI
-    args:
-      - "push"
-      - "gcr.io/$PROJECT_ID/sna-web-dashboard:$SHORT_SHA"
+WORKDIR /app
 
-  # Langkah 3: Deploy ke Cloud Run
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    id: "Deploy-Frontend-Cloud-Run"
-    dir: "sna-web-dashboard"  # <--- TAMBAHKAN BARIS INI
-    entrypoint: gcloud
-    args:
-      - "run"
-      - "deploy"
-      - "sna-web-dashboard"
-      - "--image"
-      - "gcr.io/$PROJECT_ID/sna-web-dashboard:$SHORT_SHA"
-      - "--region"
-      - "asia-southeast2"
-      - "--platform"
-      - "managed"
-      - "--allow-unauthenticated"
-      - "--port"
-      - "8080"
+# Salin package.json dan package-lock.json terlebih dahulu
+COPY package*.json ./
 
-images:
-  - "gcr.io/$PROJECT_ID/sna-web-dashboard:$SHORT_SHA"
+# Install dependencies
+RUN npm install
+
+# Salin seluruh kode frontend
+COPY . .
+
+# Build aplikasi menjadi file statis (dist/)
+RUN npm run build
+
+# STAGE 2: Tahap Web Server (Nginx)
+FROM nginx:alpine
+
+# Hapus konfigurasi default Nginx
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Salin konfigurasi nginx custom kita
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Salin hasil build dari Stage 1 (folder dist) ke folder public Nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Expose port 8080 sesuai standar Cloud Run
+EXPOSE 8080
+
+# Jalankan Nginx
+CMD ["nginx", "-g", "daemon off;"]

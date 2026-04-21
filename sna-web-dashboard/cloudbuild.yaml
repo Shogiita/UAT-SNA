@@ -1,7 +1,8 @@
 steps:
-  # Langkah 1: Build Docker Image untuk Frontend
+  # Langkah 1: Build Docker Image
   - name: "gcr.io/cloud-builders/docker"
     id: "Build-Frontend-Image"
+    dir: "sna-web-dashboard" # <--- INI KUNCINYA (Masuk ke folder frontend)
     args:
       - "build"
       - "-t"
@@ -11,6 +12,7 @@ steps:
   # Langkah 2: Push Docker Image ke Google Container Registry (GCR)
   - name: "gcr.io/cloud-builders/docker"
     id: "Push-Frontend-Image"
+    dir: "sna-web-dashboard" # <--- INI KUNCINYA
     args:
       - "push"
       - "gcr.io/$PROJECT_ID/sna-web-dashboard:$SHORT_SHA"
@@ -18,6 +20,7 @@ steps:
   # Langkah 3: Deploy ke Cloud Run
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     id: "Deploy-Frontend-Cloud-Run"
+    dir: "sna-web-dashboard" # <--- INI KUNCINYA
     entrypoint: gcloud
     args:
       - "run"
@@ -31,7 +34,7 @@ steps:
       - "managed"
       - "--allow-unauthenticated"
       - "--port"
-      - "8080" # Memastikan Cloud Run memetakan trafik ke port 8080 Nginx
+      - "8080"
 
 images:
   - "gcr.io/$PROJECT_ID/sna-web-dashboard:$SHORT_SHA"
