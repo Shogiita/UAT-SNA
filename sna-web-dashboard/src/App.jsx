@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Network } from 'vis-network';
 
-const BASE_URL = 'http://127.0.0.1:8000';
+const BASE_URL = 'https://backendsna-py-387510652840.asia-southeast2.run.app';
 
 // --- Kumpulan Ikon ---
 const IconNetwork = () => (
