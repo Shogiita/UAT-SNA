@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-const BASE_URL = 'https://backendsna-py-387510652840.asia-southeast2.run.app';
+const BASE_URL = 'MASUKAN BACKEND DISINI';
 
-// --- Injected Google Fonts & Global Styles ---
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Syne:wght@700;800&display=swap');
